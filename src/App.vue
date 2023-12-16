@@ -63,19 +63,69 @@
     const minute = (now.getMinutes() * Math.PI / 30) + (now.getSeconds() * Math.PI / (30 * 60));
     const hour = (now.getHours() % 12) * Math.PI / 6 + (now.getMinutes() * Math.PI/(6*60)) + (now.getSeconds() * Math.PI/(360*60));
 
+    const direction = (key : string) => {
+      const isMorning = now.getHours() - 12 < 0;
+      const s = isMorning ? hour + (((12 * Math.PI / 6) - hour) / 2) : hour / 2
+
+      switch (key) {
+        case 'n':
+          return s + Math.PI;
+
+        case 's':
+          return s;
+
+        case 'e':
+          return s + (-Math.PI / 2)
+
+        case 'w':
+          return s + (Math.PI / 2);
+
+        default:
+          return 0;
+      }
+    }
+
+    // Cardinal directions
+    drawHand(ctx, direction('n'), radius, radius*0.01, '#0081cd');
+    drawLabel(ctx, direction('n'), radius * 0.9, 'N');
+
+    drawHand(ctx, direction('s'), radius, radius*0.01, '#bc1e47');
+    drawLabel(ctx, direction('s'), radius * 0.9, 'S');
+
+    drawHand(ctx, direction('e'), radius, radius*0.01, '#fec200');
+    drawLabel(ctx, direction('e'), radius * 0.9, 'E');
+
+    drawHand(ctx, direction('w'), radius, radius*0.01, '#009246');
+    drawLabel(ctx, direction('w'), radius * 0.9, 'W');
+    
+    // Time
     drawHand(ctx, hour, radius*0.5, radius*0.07);
     drawHand(ctx, minute, radius*0.7, radius*0.06);
     drawHand(ctx, second, radius*0.7, radius*0.02);
+
+    // Celestial bodies
+    drawLabel(ctx, hour, (radius / 2) + 5, '☀️');
   }
 
-  const drawHand = (ctx : CanvasRenderingContext2D, pos : number, length : number, width : number) => {
+  const drawHand = (ctx : CanvasRenderingContext2D, pos : number, length : number, width : number, color? : string) => {
     ctx.beginPath();
     ctx.lineWidth = width;
     ctx.lineCap = "round";
+    ctx.strokeStyle = color ?? 'white';
     ctx.moveTo(0,0);
     ctx.rotate(pos);
     ctx.lineTo(0, -length);
     ctx.stroke();
+    ctx.rotate(-pos);
+  }
+
+  const drawLabel = (ctx : CanvasRenderingContext2D, pos : number, rad : number, text : string) => {
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.rotate(pos);
+    ctx.translate(0, -rad * 1.2);
+    ctx.fillText(text, 0, 0);
+    ctx.translate(0, rad * 1.2);
     ctx.rotate(-pos);
   }
 
@@ -88,6 +138,7 @@
 
   onMounted(() => {
     let int = createInterval();
+    // setupStuff();
     
     window.addEventListener('resize', () => {
       window.clearInterval(int);
